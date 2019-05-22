@@ -4,11 +4,14 @@ import mockMessages from './mockMessages'
 import styles from './App.module.css'
 import * as firebase from "firebase/app";
 import "firebase/firestore";
+import {FiEdit} from 'react-icons/fi'
 
 export default class extends React.Component {
 
   state={
-    messages:mockMessages
+    messages:[],
+    name:'',
+    editName:true,
   }
 
   async componentWillMount(){
@@ -29,13 +32,23 @@ export default class extends React.Component {
         }
       })
     })
+
+    const name = localStorage.getItem('name')
+    if(name){
+      this.setState({name, editName:false})
+    }
   }
 
   send = (m) => {
     this.db.collection("messages").add({
-      from:'me',
+      from:this.state.name || 'No name',
       text:m.text
     })
+  }
+
+  changeName = (name) => {
+    localStorage.setItem('name',name)
+    this.setState({name})
   }
 
   receive = (m) => {
@@ -46,13 +59,20 @@ export default class extends React.Component {
   }
 
   render() {
-    const {messages} = this.state
+    const {messages, name, editName} = this.state
     return (
       <div className={styles.wrap}>
-        <header className={styles.topbar}>msgr</header>
+        <header className={styles.topbar}>
+          msgr
+          <Username name={name} editName={editName}
+            changeName={this.changeName}
+            setEditName={(bool)=>this.setState({editName:bool})}
+          />
+        </header>
         <div className={styles.messages}>
           {messages && messages.map((m,i)=>{
-            return <Message m={m} key={i} />
+            console.log(name,m.from)
+            return <Message m={m} key={i} name={name} />
           })}
         </div> 
         <TextInput sendMessage={this.send} />
@@ -61,18 +81,34 @@ export default class extends React.Component {
   }
 }
 
-const Message = ({m}) => {
-  const {img, text} = m
-  const from = Math.random()>0.5?"you":"me"
-  return <div className={styles.msg}>
+const Message = ({m, name}) => {
+  const {img, from, text} = m
+  return <div className={styles.msg} from={name===m.from?"me":"you"}>
+    <div className={styles.name}>{from}</div>
     {img && <div className={styles.imagebubble}>
       <img alt="pic" src={img} />
     </div>}
-    <div className={styles.textbubble} from={from}>
+    <div className={styles.textbubble}>
       <div className={styles.actualtext}>{text}</div>
     </div>
   </div>
 }
 
+const Username = ({name, editName, changeName, setEditName})=> {
+  return editName ? <div className={styles.editusername}>
+    <input value={name} className={styles.nameinput}
+      onChange={e=>changeName(e.target.value)}
+    />
+    <button className={styles.namebutton}
+      onClick={()=>setEditName(false)}>
+      OK
+    </button>
+  </div> : <div className={styles.username}>
+    {name}
+    <FiEdit style={{marginLeft:10,cursor:'pointer'}} 
+      onClick={()=>setEditName(true)}
+    />
+  </div>
+}
 
 

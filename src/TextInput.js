@@ -25,6 +25,9 @@ export default class MessageInput extends Component {
     return (<div className={styles.wrap}>
       <input className={styles.input} value={text}
         onChange={(e) => this.setState({text:e.target.value})}
+        onKeyPress={(e) => {
+          if(e.key==='Enter') this.onSend()
+        }}
       />
       <button className={styles.sendbutton}
         disabled={disabled}
