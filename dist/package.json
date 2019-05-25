@@ -1,0 +1,8 @@
+{
+  "name": "react-snap-pic",
+  "version": "0.0.1",
+  "license": "MIT",
+  "files": [
+    "index.js"
+  ]
+}

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import styles from './TextInput.module.css'
-import {FiArrowUp} from 'react-icons/fi'
+import {FiArrowUp, FiCamera} from 'react-icons/fi'
 
 export default class MessageInput extends Component {
 
@@ -20,18 +20,21 @@ export default class MessageInput extends Component {
   }
 
   render(){
-    const {disabled} = this.props
+    const {showCamera} = this.props
     const {text} = this.state
     return (<div className={styles.wrap}>
+      <button className={styles.button}
+        onClick={showCamera} style={{left:8}}>
+        <FiCamera />
+      </button>
       <input className={styles.input} value={text}
         onChange={(e) => this.setState({text:e.target.value})}
         onKeyPress={(e) => {
           if(e.key==='Enter') this.onSend()
         }}
       />
-      <button className={styles.sendbutton}
-        disabled={disabled}
-        onClick={this.onSend}>
+      <button className={styles.button}
+        onClick={this.onSend} style={{right:10}}>
         <FiArrowUp />
       </button>
     </div>)

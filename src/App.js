@@ -1,10 +1,12 @@
 import React from 'react';
 import TextInput from './TextInput'
-import mockMessages from './mockMessages'
 import styles from './App.module.css'
 import * as firebase from "firebase/app";
 import "firebase/firestore";
+import "firebase/storage"
 import {FiEdit} from 'react-icons/fi'
+import Camera from 'react-snap-pic'
+import nanoid from 'nanoid'
 
 export default class extends React.Component {
 
@@ -12,6 +14,7 @@ export default class extends React.Component {
     messages:[],
     name:'',
     editName:true,
+    showCamera:false,
   }
 
   async componentWillMount(){
@@ -19,6 +22,7 @@ export default class extends React.Component {
       apiKey: "AIzaSyBAJVwrP5J4AhVKd5ijYtcTF9XMV6tIcY4",
       authDomain: "msgr-2.firebaseapp.com",
       projectId: "msgr-2",
+      storageBucket: "msgr-2.appspot.com",
     });
     
     this.db = firebase.firestore();
@@ -26,8 +30,7 @@ export default class extends React.Component {
     this.db.collection("messages").onSnapshot((snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
-          console.log("ADDED!!!!")
-          console.log(change.doc.data())
+          //console.log(change.doc.data())
           this.receive(change.doc.data())
         }
       })
@@ -41,56 +44,81 @@ export default class extends React.Component {
 
   send = (m) => {
     this.db.collection("messages").add({
-      from:this.state.name || 'No name',
-      text:m.text
+      ...m,
+      from: this.state.name || 'No name',
+      ts: firebase.firestore.FieldValue.serverTimestamp()
     })
   }
 
-  changeName = (name) => {
-    localStorage.setItem('name',name)
-    this.setState({name})
+  setEditName = (editName) => {
+    this.setState({editName})
+    if(editName===false){
+      localStorage.setItem('name',this.state.name)
+    }
   }
 
   receive = (m) => {
-    if(!m.text) return
+    if(!m.ts) {
+      m.ts = {seconds:Math.round(Date.now()/1000)}
+    }
     const messages = [...this.state.messages]
     messages.unshift(m)
+    messages.sort((a,b)=>b.ts.seconds-a.ts.seconds)
     this.setState({messages})
   }
 
+  takePicture = async (img) => {
+    console.log(img)
+    this.setState({showCamera:false})
+
+    const imgID = nanoid()
+    var storageRef = firebase.storage().ref();
+    var ref = storageRef.child(imgID+'.jpg');
+    try {
+      await ref.putString(img, 'data_url')
+      this.send({img: imgID})
+    } catch(e) {
+      console.log(e)
+    }
+  }
+
   render() {
-    const {messages, name, editName} = this.state
+    const {messages, name, editName, showCamera} = this.state
     return (
       <div className={styles.wrap}>
+        {showCamera && <Camera takePicture={this.takePicture} />}
         <header className={styles.topbar}>
           msgr
           <Username name={name} editName={editName}
-            changeName={this.changeName}
-            setEditName={(bool)=>this.setState({editName:bool})}
+            changeName={(name)=>this.setState({name})}
+            setEditName={this.setEditName}
           />
         </header>
         <div className={styles.messages}>
           {messages && messages.map((m,i)=>{
-            console.log(name,m.from)
             return <Message m={m} key={i} name={name} />
           })}
         </div> 
-        <TextInput sendMessage={this.send} />
+        <TextInput sendMessage={this.send} 
+          showCamera={()=>this.setState({showCamera:true})}
+        />
       </div>
     );
   }
 }
 
+const bucket = 'https://firebasestorage.googleapis.com/v0/b/msgr-2.appspot.com/o/'
+const suffix = '.jpg?alt=media'
 const Message = ({m, name}) => {
   const {img, from, text} = m
   return <div className={styles.msg} from={name===m.from?"me":"you"}>
     <div className={styles.name}>{from}</div>
-    {img && <div className={styles.imagebubble}>
-      <img alt="pic" src={img} />
+    {img ? <div className={styles.bubble}>
+      <img alt="pic" src={bucket+img+suffix} />
+    </div> : 
+    <div className={styles.bubble}>
+      <div>{text}</div>
     </div>}
-    <div className={styles.textbubble}>
-      <div className={styles.actualtext}>{text}</div>
-    </div>
   </div>
 }
 
