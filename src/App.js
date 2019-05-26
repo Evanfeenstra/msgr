@@ -46,7 +46,7 @@ export default class extends React.Component {
     this.db.collection("messages").add({
       ...m,
       from: this.state.name || 'No name',
-      ts: firebase.firestore.FieldValue.serverTimestamp()
+      ts: Date.now()
     })
   }
 
@@ -58,19 +58,14 @@ export default class extends React.Component {
   }
 
   receive = (m) => {
-    if(!m.ts) {
-      m.ts = {seconds:Math.round(Date.now()/1000)}
-    }
     const messages = [...this.state.messages]
     messages.unshift(m)
-    messages.sort((a,b)=>b.ts.seconds-a.ts.seconds)
+    messages.sort((a,b)=>b.ts-a.ts)
     this.setState({messages})
   }
 
   takePicture = async (img) => {
-    console.log(img)
     this.setState({showCamera:false})
-
     const imgID = nanoid()
     var storageRef = firebase.storage().ref();
     var ref = storageRef.child(imgID+'.jpg');
