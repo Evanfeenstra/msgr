@@ -77,7 +77,7 @@
   border-radius:10px;
 }
 .bubble > * {
-  color:white;
+  color:rgb(172, 147, 147);
   border-radius:5px;
   position:relative;
   z-index:101;
@@ -124,4 +124,12 @@
   align-items: center;
   margin-right:12px;
   font-size:12px;
+}
+.logowrap{
+  display:flex;
+  align-items: center;
+}
+.logo{
+  height:24px;
+  margin-right: 10px;
 }

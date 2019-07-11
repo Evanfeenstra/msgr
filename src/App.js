@@ -7,6 +7,7 @@ import "firebase/storage"
 import {FiEdit} from 'react-icons/fi'
 import Camera from 'react-snap-pic'
 import nanoid from 'nanoid'
+import logo from './logo.png'
 
 export default class extends React.Component {
 
@@ -17,7 +18,7 @@ export default class extends React.Component {
     showCamera:false,
   }
 
-  async componentWillMount(){
+  componentWillMount(){
     firebase.initializeApp({
       apiKey: "AIzaSyBAJVwrP5J4AhVKd5ijYtcTF9XMV6tIcY4",
       authDomain: "msgr-2.firebaseapp.com",
@@ -30,8 +31,10 @@ export default class extends React.Component {
     this.db.collection("messages").onSnapshot((snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
-          //console.log(change.doc.data())
-          this.receive(change.doc.data())
+          this.receive({
+            ...change.doc.data(),
+            id: change.doc.id
+          })
         }
       })
     })
@@ -58,8 +61,7 @@ export default class extends React.Component {
   }
 
   receive = (m) => {
-    const messages = [...this.state.messages]
-    messages.unshift(m)
+    const messages = [m, ...this.state.messages]
     messages.sort((a,b)=>b.ts-a.ts)
     this.setState({messages})
   }
@@ -83,7 +85,10 @@ export default class extends React.Component {
       <div className={styles.wrap}>
         {showCamera && <Camera takePicture={this.takePicture} />}
         <header className={styles.topbar}>
-          msgr
+          <div className={styles.logowrap}>
+            <img src={logo} className={styles.logo} alt="logo" />
+            msgr
+          </div>
           <Username name={name} editName={editName}
             changeName={(name)=>this.setState({name})}
             setEditName={this.setEditName}
@@ -91,7 +96,9 @@ export default class extends React.Component {
         </header>
         <div className={styles.messages}>
           {messages && messages.map((m,i)=>{
-            return <Message m={m} key={i} name={name} />
+            return <Message m={m} key={i} name={name} 
+              onClick={()=>this.db.collection("messages").doc(m.id).delete()}
+            />
           })}
         </div> 
         <TextInput sendMessage={this.send} 
@@ -104,9 +111,10 @@ export default class extends React.Component {
 
 const bucket = 'https://firebasestorage.googleapis.com/v0/b/msgr-2.appspot.com/o/'
 const suffix = '.jpg?alt=media'
-const Message = ({m, name}) => {
+const Message = ({m, name, onClick}) => {
   const {img, from, text} = m
-  return <div className={styles.msg} from={name===m.from?"me":"you"}>
+  return <div className={styles.msg} from={name===m.from?"me":"you"}
+    onClick={onClick}>
     <div className={styles.name}>{from}</div>
     {img ? <div className={styles.bubble}>
       <img alt="pic" src={bucket+img+suffix} />

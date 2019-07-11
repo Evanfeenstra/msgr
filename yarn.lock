@@ -3458,6 +3458,11 @@ detect-port-alt@1.1.6:
     address "^1.0.1"
     debug "^2.6.0"
 
+didjs@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/didjs/-/didjs-0.0.3.tgz#58a2dbf2f681c3b18f6e4182c6f5b3e34c1a064c"
+  integrity sha512-mBr2KGYnF8k3hzrQJJ+HglbgfffV5FSHUIC2G3wiUC61kLO3GD4YyLNa5DAiLCVeYf5CP9WZcvkJBEsrAepYcg==
+
 diff-sequences@^24.3.0:
   version "24.3.0"
   resolved "https://registry.yarnpkg.com/diff-sequences/-/diff-sequences-24.3.0.tgz#0f20e8a1df1abddaf4d9c226680952e64118b975"

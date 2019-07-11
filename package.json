@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "babel-loader": "8.0.5",
+    "didjs": "^0.0.3",
     "firebase": "^6.0.2",
     "nanoid": "^2.0.3",
     "react": "^16.8.6",
